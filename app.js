@@ -738,3 +738,55 @@ async function startQiblaCompass() {
 }
 
     
+
+function handleCompassOrientation(event) {
+  if (qiblaBearing === null || !event) return;
+
+  let heading = null;
+
+  if (typeof event.webkitCompassHeading === "number") {
+    heading = event.webkitCompassHeading;
+  } else if (typeof event.alpha === "number") {
+    heading = (360 - event.alpha + 360) % 360;
+  }
+
+  if (heading === null || !Number.isFinite(heading)) return;
+
+  const dial = document.getElementById("qibla-dial");
+  const pointer = document.getElementById("qibla-pointer-wrap");
+
+  if (pointer && !pointer.dataset.ready) {
+    pointer.innerHTML = `
+      <div style="
+        position:absolute;
+        left:-9px;
+        top:-112px;
+        width:18px;
+        height:112px;
+        transform-origin:50% 100%;
+        transform:rotate(${qiblaBearing}deg)
+      ">
+        <div style="
+          width:0;
+          height:0;
+          margin:auto;
+          border-left:9px solid transparent;
+          border-right:9px solid transparent;
+          border-bottom:85px solid #d9bd78
+        "></div>
+        <div style="
+          width:5px;
+          height:27px;
+          margin:-1px auto 0;
+          background:#f5f5ed;
+          border-radius:4px
+        "></div>
+      </div>
+    `;
+    pointer.dataset.ready = "1";
+  }
+
+  if (dial) {
+    dial.style.transform = `rotate(${-heading}deg)`;
+  }
+}
