@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10251e">
+  <title>سجدة | Sajdah</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <h1>سجدة</h1>
+    <p>رفيقك في طريق الطمأنينة</p>
+  </header>
+
+  <main>
+    <section class="welcome">
+      <h2>السلام عليكم ورحمة الله</h2>
+      <p>اجعل يومك عامراً بذكر الله.</p>
+    </section>
+
+    <section class="prayer-card">
+      <h2>الصلاة القادمة</h2>
+      <p id="next-prayer">سيتم تحديدها قريباً</p>
+      <p id="countdown">نسأل الله أن يتقبل طاعتكم</p>
+    </section>
+
+    <section class="grid">
+      <button onclick="showSection('prayers')">مواقيت الصلاة</button>
+      <button onclick="showSection('qada')">قضاء الصلوات</button>
+      <button onclick="showSection('quran')">القرآن الكريم</button>
+      <button onclick="showSection('adhkar')">الأذكار</button>
+      <button onclick="showSection('tasbeeh')">المسبحة</button>
+      <button onclick="showSection('qibla')">القبلة</button>
+    </section>
+
+    <section id="content" class="content">
+      <h2>أهلاً بك في سجدة</h2>
+      <p>اختر إحدى الخدمات للبدء.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>سجدة © 2026</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+  </html>
+  
