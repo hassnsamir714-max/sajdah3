@@ -5,6 +5,8 @@ const content = document.getElementById("content");
 const API = "https://api.aladhan.com/v1";
 
 let countdownTimer = null;
+let qiblaBearing = null;
+let compassStarted = false;
 
 const PRAYERS = [
   ["Fajr", "الفجر"],
@@ -58,13 +60,17 @@ function goHome() {
   `;
 
   setActive("home");
-  window.scrollTo({ top: 0, behavior: "smooth" });
 
   const lat = localStorage.getItem("sajdah-lat");
   const lon = localStorage.getItem("sajdah-lon");
 
   if (lat && lon) {
     loadHomePrayerTimes(Number(lat), Number(lon));
+  } else {
+    const name = document.getElementById("next-prayer");
+    const countdown = document.getElementById("countdown");
+    if (name) name.textContent = "حدد موقعك";
+    if (countdown) countdown.textContent = "افتح مواقيت الصلاة لتحديد موقعك.";
   }
 }
 
@@ -73,27 +79,13 @@ function showSection(name) {
   setActive(name);
 
   switch (name) {
-    case "home":
-      goHome();
-      break;
-    case "prayers":
-      showPrayers();
-      break;
-    case "tasbeeh":
-      showTasbeeh();
-      break;
-    case "qada":
-      showQada();
-      break;
-    case "adhkar":
-      showAdhkar();
-      break;
-    case "quran":
-      showQuran();
-      break;
-    case "qibla":
-      showQibla();
-      break;
+    case "home": goHome(); break;
+    case "prayers": showPrayers(); break;
+    case "tasbeeh": showTasbeeh(); break;
+    case "qada": showQada(); break;
+    case "adhkar": showAdhkar(); break;
+    case "quran": showQuran(); break;
+    case "qibla": showQibla(); break;
   }
 }
 
@@ -171,8 +163,8 @@ function requestPrayerLocation() {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
-      localStorage.setItem("sajdah-lat", lat);
-      localStorage.setItem("sajdah-lon", lon);
+      localStorage.setItem("sajdah-lat", String(lat));
+      localStorage.setItem("sajdah-lon", String(lon));
 
       status.textContent = "تم تحديد موقعك بنجاح.";
       loadByCoordinates(lat, lon);
@@ -317,8 +309,8 @@ function renderPrayerTimes(timings) {
   results.innerHTML = `
     <div class="prayer-card">
       <h3>الصلاة القادمة</h3>
-      <h2 id="next-prayer">جاري الحساب...</h2>
-      <p id="countdown">جاري الحساب...</p>
+      <h2 id="prayer-page-next">جاري الحساب...</h2>
+      <p id="prayer-page-countdown">جاري الحساب...</p>
     </div>
 
     <div class="welcome-card">
@@ -368,8 +360,8 @@ function updateCountdown(prayerTimes) {
   const minutes = Math.floor((difference % 3600000) / 60000);
   const seconds = Math.floor((difference % 60000) / 1000);
 
-  const nameElement = document.getElementById("next-prayer");
-  const countdownElement = document.getElementById("countdown");
+  const nameElement = document.getElementById("prayer-page-next");
+  const countdownElement = document.getElementById("prayer-page-countdown");
 
   if (nameElement) nameElement.textContent = next.name;
 
@@ -381,10 +373,11 @@ function updateCountdown(prayerTimes) {
 
 function startPrayerCountdown(prayerTimes) {
   clearInterval(countdownTimer);
-
   updateCountdown(prayerTimes);
+
   countdownTimer = setInterval(() => {
     updateCountdown(prayerTimes);
+    updateMainPrayerCard(prayerTimes);
   }, 1000);
 }
 
@@ -431,11 +424,11 @@ async function loadHomePrayerTimes(lat, lon) {
       updateMainPrayerCard(prayerTimes);
     }, 1000);
   } catch (error) {
-    const mainName = document.getElementById("next-prayer");
-    const mainCountdown = document.getElementById("countdown");
+    const name = document.getElementById("next-prayer");
+    const countdown = document.getElementById("countdown");
 
-    if (mainName) mainName.textContent = "تعذر تحميل المواقيت";
-    if (mainCountdown) mainCountdown.textContent = "افتح مواقيت الصلاة وحاول مجدداً.";
+    if (name) name.textContent = "تعذر تحميل المواقيت";
+    if (countdown) countdown.textContent = "افتح مواقيت الصلاة وحاول مجدداً.";
   }
 }
 
@@ -462,7 +455,6 @@ function showTasbeeh() {
 
 function incrementTasbeeh() {
   const count = Number(localStorage.getItem("sajdah-tasbeeh") || 0) + 1;
-
   localStorage.setItem("sajdah-tasbeeh", count);
 
   const display = document.getElementById("tasbeeh-count");
@@ -494,28 +486,58 @@ function showQada() {
   const prayers = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"];
   const data = readQadaData();
 
-  const total = Object.values(data).reduce(
-    (sum, value) => sum + (Number(value) || 0),
+  const total = prayers.reduce(
+    (sum, prayer) => sum + (Number(data[prayer]) || 0),
     0
   );
 
   content.innerHTML = `
-    <h2>سجل الصلوات المقضية</h2>
+    <h2>قضاء الصلوات</h2>
 
     <div class="welcome-card">
-      <p>تابع عدد الصلوات التي أتممت قضاءها.</p>
-      <h3>المجموع: ${total}</h3>
+      <p>أدخل عدد الأيام الفائتة، وسيُضاف العدد نفسه لكل صلاة من الصلوات الخمس.</p>
+      <label for="qada-days">عدد الأيام</label>
+      <input
+        id="qada-days"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        placeholder="مثلاً: 10"
+        style="width:100%;padding:14px;margin:12px 0;border-radius:12px"
+      >
+      <button onclick="addQadaDays()">إضافة الأيام</button>
+      <h3>المجموع المتبقي: ${total} صلاة</h3>
     </div>
 
     ${prayers.map(prayer => `
       <div class="welcome-card">
         <h3>${prayer}</h3>
-        <p>العدد المقضي: <strong>${Number(data[prayer]) || 0}</strong></p>
-        <button onclick="incrementQada('${prayer}')">تم القضاء</button>
-        <button onclick="decrementQada('${prayer}')">تراجع</button>
+        <p>المتبقي: <strong>${Number(data[prayer]) || 0}</strong></p>
+        <button onclick="incrementQada('${prayer}')">قضيت صلاة (+1)</button>
+        <button onclick="decrementQada('${prayer}')">تراجع (-1)</button>
       </div>
     `).join("")}
   `;
+}
+
+function addQadaDays() {
+  const input = document.getElementById("qada-days");
+  const days = Number(input && input.value);
+
+  if (!Number.isSafeInteger(days) || days < 1) {
+    alert("أدخل عدد أيام صحيحاً أكبر من صفر.");
+    return;
+  }
+
+  const data = readQadaData();
+
+  ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"].forEach(prayer => {
+    data[prayer] = (Number(data[prayer]) || 0) + days;
+  });
+
+  localStorage.setItem("sajdah-qada", JSON.stringify(data));
+  showQada();
 }
 
 function incrementQada(prayer) {
@@ -580,60 +602,139 @@ function showQuran() {
 }
 
 // ========================
-// Qibla
+// Qibla compass
 // ========================
 
 function showQibla() {
   content.innerHTML = `
-    <h2>اتجاه القبلة</h2>
-    <div class="welcome-card">
-      <p id="qibla-status">حدد موقعك لمعرفة اتجاه القبلة.</p>
-      <button onclick="calculateQibla()">تحديد اتجاه القبلة</button>
-      <h2 id="qibla-result"></h2>
+    <h2>بوصلة القبلة</h2>
+
+    <div class="welcome-card" style="text-align:center">
+      <p id="qibla-status">اضغط الزر لتحديد موقعك وتشغيل البوصلة.</p>
+
+      <div
+        id="qibla-compass"
+        style="display:none;width:min(78vw,290px);height:min(78vw,290px);margin:24px auto;border-radius:50%;border:2px solid var(--gold);position:relative;background:radial-gradient(circle,#244b35,#0b1911);overflow:hidden"
+      >
+        <div
+          id="qibla-dial"
+          style="position:absolute;inset:0;border-radius:50%;transition:transform .12s linear"
+        >
+          <b style="position:absolute;top:12px;left:50%;transform:translateX(-50%);color:var(--gold)">شمال N</b>
+          <b style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%)">جنوب S</b>
+          <b style="position:absolute;left:10px;top:50%;transform:translateY(-50%)">غرب W</b>
+          <b style="position:absolute;right:10px;top:50%;transform:translateY(-50%)">شرق E</b>
+
+          <div
+            id="qibla-pointer-wrap"
+            style="position:absolute;left:50%;top:50%;width:0;height:0"
+          ></div>
+        </div>
+
+        <div
+          style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gold);border:2px solid white"
+        ></div>
+      </div>
+
+      <h3 id="qibla-bearing" style="color:var(--gold)"></h3>
+      <p>حرّك الجهاز ببطء؛ السهم يوضح اتجاه القبلة.</p>
+      <button onclick="startQiblaCompass()">تحديد الموقع وتشغيل البوصلة</button>
     </div>
   `;
 }
 
-function calculateQibla() {
-  const status = document.getElementById("qibla-status");
-  const result = document.getElementById("qibla-result");
+function getQiblaBearing(latitude, longitude) {
+  const lat = latitude * Math.PI / 180;
+  const lon = longitude * Math.PI / 180;
 
-  if (!navigator.geolocation) {
-    status.textContent = "متصفحك لا يدعم تحديد الموقع.";
-    return;
-  }
+  const kaabaLat = 21.4225 * Math.PI / 180;
+  const kaabaLon = 39.8262 * Math.PI / 180;
+
+  const y = Math.sin(kaabaLon - lon);
+  const x =
+    Math.cos(lat) * Math.tan(kaabaLat) -
+    Math.sin(lat) * Math.cos(kaabaLon - lon);
+
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+async function startQiblaCompass() {
+  const status = document.getElementById("qibla-status");
+  if (!status) return;
 
   status.textContent = "جاري تحديد الموقع...";
 
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      const lat = position.coords.latitude * Math.PI / 180;
-      const lon = position.coords.longitude * Math.PI / 180;
+  try {
+    let lat = localStorage.getItem("sajdah-lat");
+    let lon = localStorage.getItem("sajdah-lon");
 
-      const kaabaLat = 21.4225 * Math.PI / 180;
-      const kaabaLon = 39.8262 * Math.PI / 180;
+    if (!lat || !lon) {
+      if (!navigator.geolocation) {
+        throw new Error("المتصفح لا يدعم تحديد الموقع.");
+      }
 
-      const y = Math.sin(kaabaLon - lon);
-      const x =
-        Math.cos(lat) * Math.tan(kaabaLat) -
-        Math.sin(lat) * Math.cos(kaabaLon - lon);
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 300000
+        });
+      });
 
-      const angle = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      lat = position.coords.latitude;
+      lon = position.coords.longitude;
 
-      status.textContent = "اتجاه القبلة من الشمال باتجاه عقارب الساعة:";
-      result.textContent = `${angle.toFixed(1)}°`;
-    },
-    () => {
-      status.textContent = "تعذر تحديد موقعك. تحقق من إذن الموقع.";
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 300000
+      localStorage.setItem("sajdah-lat", String(lat));
+      localStorage.setItem("sajdah-lon", String(lon));
     }
-  );
+
+    qiblaBearing = getQiblaBearing(Number(lat), Number(lon));
+
+    const compass = document.getElementById("qibla-compass");
+    const bearingText = document.getElementById("qibla-bearing");
+
+    if (compass) compass.style.display = "block";
+    if (bearingText) {
+      bearingText.textContent =
+        "اتجاه القبلة: " + qiblaBearing.toFixed(1) + "° من الشمال";
+    }
+
+    if (!("DeviceOrientationEvent" in window)) {
+      status.textContent =
+        "تم حساب الاتجاه، لكن حساس البوصلة غير مدعوم في هذا المتصفح.";
+      return;
+    }
+
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      const permission = await DeviceOrientationEvent.requestPermission();
+
+      if (permission !== "granted") {
+        throw new Error("لم يتم السماح باستخدام حساس اتجاه الجهاز.");
+      }
+    }
+
+    if (!compassStarted) {
+      window.addEventListener(
+        "deviceorientationabsolute",
+        handleCompassOrientation,
+        true
+      );
+
+      window.addEventListener(
+        "deviceorientation",
+        handleCompassOrientation,
+        true
+      );
+
+      compassStarted = true;
+    }
+
+    status.textContent =
+      "تم تشغيل البوصلة. إذا لم تتحرك، فقد يحتاج الجهاز إلى معايرة.";
+  } catch (error) {
+    status.textContent =
+      error.message || "تعذر تحديد الموقع أو تشغيل البوصلة.";
+  }
 }
 
-// Start app
-goHome();
     
