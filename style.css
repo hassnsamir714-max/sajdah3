@@ -240,3 +240,55 @@ footer {
     font-size: 10px;
   }
 }
+
+/* Active Navigation */
+
+.bottom-nav button.active {
+  color: var(--gold);
+  background: rgba(217,189,120,.12);
+}
+
+/* Tasbeeh Counter */
+
+.tasbeeh-count {
+  width: 150px;
+  height: 150px;
+  margin: 25px auto;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 45px;
+  font-weight: 800;
+  color: var(--gold);
+  background: radial-gradient(circle, #244b35, #10251c);
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 30px rgba(217,189,120,.12);
+}
+
+#tasbeeh-button {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin: 15px auto;
+  background: linear-gradient(135deg, #315d40, #183528);
+  border: 1px solid var(--gold);
+  padding: 18px;
+  font-size: 19px;
+}
+
+#reset-button {
+  display: block;
+  margin: 10px auto;
+  padding: 12px 25px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.content button {
+  transition: .2s ease;
+}
+
+.content button:active {
+  transform: scale(.95);
+}
