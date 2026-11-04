@@ -4,48 +4,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#10251e">
+  <meta name="theme-color" content="#081510">
+  <meta name="description" content="سجدة، رفيقك في عباداتك اليومية">
   <title>سجدة | Sajdah</title>
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header class="header">
-    <h1>سجدة</h1>
+
+<header class="header">
+  <div>
+    <h1>سجدة ✦</h1>
     <p>رفيقك في طريق الطمأنينة</p>
-  </header>
+  </div>
+  <div>🌙</div>
+</header>
 
-  <main>
-    <section class="welcome">
-      <h2>السلام عليكم ورحمة الله</h2>
-      <p>اجعل يومك عامراً بذكر الله.</p>
-    </section>
+<main>
 
-    <section class="prayer-card">
-      <h2>الصلاة القادمة</h2>
-      <p id="next-prayer">سيتم تحديدها قريباً</p>
-      <p id="countdown">نسأل الله أن يتقبل طاعتكم</p>
-    </section>
+  <section class="welcome">
+    <h2>السلام عليكم ورحمة الله</h2>
+    <p>ابدأ يومك بذكر الله، واجعل قلبك مطمئناً.</p>
+  </section>
 
-    <section class="grid">
-      <button onclick="showSection('prayers')">مواقيت الصلاة</button>
-      <button onclick="showSection('qada')">قضاء الصلوات</button>
-      <button onclick="showSection('quran')">القرآن الكريم</button>
-      <button onclick="showSection('adhkar')">الأذكار</button>
-      <button onclick="showSection('tasbeeh')">المسبحة</button>
-      <button onclick="showSection('qibla')">القبلة</button>
-    </section>
+  <section class="prayer-card">
+    <h2>الصلاة القادمة</h2>
+    <p id="next-prayer">جاري التحضير...</p>
+    <p id="countdown">اللهم أعنّا على ذكرك وشكرك وحسن عبادتك</p>
+  </section>
 
-    <section id="content" class="content">
-      <h2>أهلاً بك في سجدة</h2>
-      <p>اختر إحدى الخدمات للبدء.</p>
-    </section>
-  </main>
+  <section class="grid">
+    <button onclick="showSection('prayers')">🕌 مواقيت الصلاة</button>
+    <button onclick="showSection('qada')">📋 قضاء الصلوات</button>
+    <button onclick="showSection('quran')">📖 القرآن الكريم</button>
+    <button onclick="showSection('adhkar')">🤲 الأذكار</button>
+    <button onclick="showSection('tasbeeh')">📿 المسبحة</button>
+    <button onclick="showSection('qibla')">🧭 اتجاه القبلة</button>
+  </section>
 
-  <footer>
-    <p>سجدة © 2026</p>
-  </footer>
+  <section id="content" class="content">
+    <h2>أهلاً بك في سجدة</h2>
+    <p>اختر الخدمة التي تريدها.</p>
+  </section>
 
-  <script src="app.js"></script>
+</main>
+
+<nav class="bottom-nav">
+  <button onclick="goHome()">⌂<span>الرئيسية</span></button>
+  <button onclick="showSection('quran')">▤<span>القرآن</span></button>
+  <button onclick="showSection('tasbeeh')">◉<span>التسبيح</span></button>
+  <button onclick="showSection('adhkar')">✧<span>الأذكار</span></button>
+  <button onclick="showSection('qada')">☷<span>القضاء</span></button>
+</nav>
+
+<footer>
+  <p>سجدة © 2026 — تقبّل الله طاعتكم</p>
+</footer>
+
+<script src="app.js"></script>
+
+<script>
+function goHome() {
+  document.getElementById("content").innerHTML =
+    "<h2>أهلاً بك في سجدة</h2><p>اختر الخدمة التي تريدها.</p>";
+}
+</script>
+
 </body>
-  </html>
-  
+</html>
